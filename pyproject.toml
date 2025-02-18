@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "roulette"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+aiogram = "^3.17.0"
+fastapi = "^0.115.8"
+alembic = "^1.14.1"
+sqlalchemy = "^2.0.37"
+loguru = "^0.7.3"
+pydantic-settings = "^2.7.1"
+redis = "^5.2.1"
+black = "^25.1.0"
+uvicorn = "^0.34.0"
+telethon = "^1.38.1"
+pytoniq-core = "^0.1.41"
+asyncpg = "^0.30.0"
+cryptg = "^0.5.0.post0"
+kurigram = "^2.1.38"
+tgcrypto = "^1.2.5"
+greenlet = "^3.1.1"
+tonutils = "^0.2.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
