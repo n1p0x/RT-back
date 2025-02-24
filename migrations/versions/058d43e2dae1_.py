@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: dd1d5e7e129b
+Revision ID: 058d43e2dae1
 Revises: 
-Create Date: 2025-02-18 17:48:56.783680
+Create Date: 2025-02-19 17:44:11.336015
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = 'dd1d5e7e129b'
+revision: str = '058d43e2dae1'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -105,17 +105,27 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.BIGINT(), nullable=False),
     sa.Column('msg_hash', sa.String(), nullable=False),
-    sa.Column('amount', sa.Integer(), nullable=False),
+    sa.Column('amount', sa.BIGINT(), nullable=False),
     sa.Column('payload', sa.String(), nullable=True),
     sa.Column('created_at', postgresql.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('msg_hash')
     )
+    op.create_table('ton_withdraws',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('user_id', sa.BIGINT(), nullable=False),
+    sa.Column('destination', sa.String(length=66), nullable=False),
+    sa.Column('amount', sa.Integer(), nullable=False),
+    sa.Column('created_at', postgresql.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('users_gifts',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.BIGINT(), nullable=False),
     sa.Column('gift_id', sa.BIGINT(), nullable=False),
+    sa.Column('message_id', sa.Integer(), nullable=False),
     sa.Column('created_at', postgresql.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['gift_id'], ['gifts.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
@@ -150,6 +160,7 @@ def downgrade() -> None:
     op.drop_table('users_nfts')
     op.drop_table('users_star_deposits')
     op.drop_table('users_gifts')
+    op.drop_table('ton_withdraws')
     op.drop_table('ton_deposits')
     op.drop_table('nfts')
     op.drop_table('nft_withdraws')

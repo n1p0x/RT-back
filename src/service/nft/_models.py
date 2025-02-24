@@ -20,4 +20,5 @@ class Nft(BaseModel):
 class UserNft(BaseModel):
     id: int
     user_id: int
+    nft_id: int
     address: str

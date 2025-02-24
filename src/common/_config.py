@@ -15,11 +15,11 @@ class Config(BaseSettings):
     # REDIS_HOST: str
     # REDIS_PORT: int
 
-    # MNEMONIC: str
     IS_TESTNET: bool
     TONCENTER_API_KEY: str
     TONCENTER_API_KEY_TESTNET: str
     WALLET_ADDRESS: str
+    MNEMONIC: str
 
     TG_CLIENT_ID: int
     TG_CLIENT_HASH: str

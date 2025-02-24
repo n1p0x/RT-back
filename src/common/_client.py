@@ -17,4 +17,5 @@ app = Client(
     phone_number=config.TG_PHONE,
     password=config.TG_PASSWORD,
     workdir=SESSION_DIR,
+    skip_updates=False,
 )

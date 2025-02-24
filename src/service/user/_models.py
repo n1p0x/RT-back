@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, ConfigDict, computed_field
+from pydantic import BaseModel, Field
 
 
 class User(BaseModel):
@@ -19,35 +19,3 @@ class UserNft(BaseModel):
 class UserGifts(BaseModel):
     gifts: list | None
     nfts: list[UserNft] | None
-
-
-class DecodedContent(BaseModel):
-    type: str
-    comment: str
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class MessageContent(BaseModel):
-    body: str
-    decoded: DecodedContent | None = None
-    hash: str
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class Message(BaseModel):
-    source: str | None = None
-    destination: str | None = None
-    value: str | None = None
-    message_content: MessageContent | None = None
-
-    @computed_field
-    def is_commented(self) -> bool:
-        return (
-            False
-            if not self.message_content
-            or not self.message_content.decoded
-            or not self.message_content.decoded.comment
-            else True
-        )

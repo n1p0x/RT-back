@@ -36,11 +36,10 @@ class Repo:
             await session.commit()
 
     @staticmethod
-    async def add_user_gift(user_id: int, gift_id: int) -> None:
+    async def add_user_gift(user_id: int, gift_id: int, message_id: int) -> None:
         async with new_session() as session:
             stmt = insert(UserGift).values(
-                user_id=user_id,
-                gift_id=gift_id,
+                user_id=user_id, gift_id=gift_id, message_id=message_id
             )
 
             await session.execute(stmt)

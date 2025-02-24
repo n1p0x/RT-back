@@ -21,7 +21,12 @@ class Service:
         if not (user_nft := await NftRepo.get_user_nft(user_nft_id)):
             return
 
-        return UserNft.model_validate(user_nft, from_attributes=True)
+        return UserNft(
+            id=user_nft.id,
+            user_id=user_nft.user_id,
+            nft_id=user_nft.nft.id,
+            address=user_nft.nft.address,
+        )
 
     @staticmethod
     async def add_nft(

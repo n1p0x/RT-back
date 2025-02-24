@@ -27,5 +27,5 @@ class Repo:
 
     @staticmethod
     async def fill():
-        await Repo.fill_user()
+        # await Repo.fill_user()
         await Repo.fill_collection()

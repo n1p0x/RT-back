@@ -26,6 +26,20 @@ class Service:
         if not (user := await UserRepo.get_user_gifts(user_id)):
             return
 
+        gifts = (
+            [
+                UserNft(
+                    id=user_gift.id,
+                    title=user_gift.gift.title,
+                    collectible_id=user_gift.gift.collectible_id,
+                    lottie_url=user_gift.gift.lottie_url,
+                )
+                for user_gift in user.user_gifts
+            ]
+            if user.user_gifts
+            else None
+        )
+
         nfts = (
             [
                 UserNft(
@@ -40,7 +54,7 @@ class Service:
             else None
         )
 
-        return UserGifts(gifts=None, nfts=nfts)
+        return UserGifts(gifts=gifts, nfts=nfts)
 
     @staticmethod
     async def add_user(

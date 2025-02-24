@@ -15,6 +15,9 @@ router = APIRouter()
         status.HTTP_404_NOT_FOUND: {
             'description': 'Nfts for specified wallet not found'
         },
+        status.HTTP_503_SERVICE_UNAVAILABLE: {
+            'description': 'Failed to load collections'
+        },
     },
 )
 async def get_nfts(address: str, _=Depends(get_user_id)):

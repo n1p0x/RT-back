@@ -1,7 +1,7 @@
 from sqlalchemy import insert, select, update, func, cast
 from sqlalchemy.dialects.postgresql import DATE
 
-from src.db import new_session, NftDeposit, GiftDeposit, TonDeposit
+from src.db import new_session, NftDeposit, GiftDeposit, TonDeposit, User
 
 
 class Repo:
@@ -18,17 +18,24 @@ class Repo:
 
     @staticmethod
     async def add_ton_deposit(
-        user_id: int, msg_hash: str, amount: int, payload: str
+        user_id: int,
+        new_balance: int,
+        msg_hash: str,
+        amount: int,
+        payload: str | None = None,
     ) -> None:
         async with new_session() as session:
+            stmt = update(User).where(User.id == user_id).values(balance=new_balance)
+            await session.execute(stmt)
+
             stmt = insert(TonDeposit).values(
                 user_id=user_id,
                 msg_hash=msg_hash,
                 amount=amount,
                 payload=payload,
             )
-
             await session.execute(stmt)
+
             await session.commit()
 
     @staticmethod

@@ -1,8 +1,9 @@
 import aiohttp
 
-from ._models import NftDeposit
+from ._models import NftDeposit, Message
 from src.common import config
 from src.repo.deposit import DepositRepo
+from src.service.user import UserService
 from src.service.nft import NftService
 
 
@@ -19,9 +20,15 @@ class Service:
 
     @staticmethod
     async def add_ton_deposit(
-        user_id: int, msg_hash: str, amount: int, payload: str = 'deposit'
+        user_id: int,
+        new_balance: int,
+        msg_hash: str,
+        amount: int,
+        payload: str | None = None,
     ) -> None:
-        await DepositRepo.add_ton_deposit(user_id, msg_hash, amount, payload)
+        await DepositRepo.add_ton_deposit(
+            user_id, new_balance, msg_hash, amount, payload
+        )
 
     @staticmethod
     async def add_nft_deposit(
@@ -38,7 +45,7 @@ class Service:
     @staticmethod
     async def get_ton_transfer(
         destination: str, start_utime: int | None = None
-    ) -> None:
+    ) -> list[Message] | None:
         base_url = (
             'https://testnet.toncenter.com/api/v3'
             if config.IS_TESTNET
@@ -54,9 +61,11 @@ class Service:
         }
         params = {
             'destination': destination,
-            'start_utime': start_utime,
-            'exclude_externals': True,
+            'exclude_externals': 'true',
         }
+
+        if start_utime:
+            params['start_utime'] = start_utime
 
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=headers, params=params) as resp:
@@ -64,6 +73,13 @@ class Service:
                     return
 
                 res = await resp.json()
+
+                if not len(msgs := res['messages']):
+                    return
+
+                return [
+                    Message.model_validate(msg, from_attributes=True) for msg in msgs
+                ]
 
     @staticmethod
     async def get_nft_transfer(owner_address: str, item_address: str) -> int | None:
@@ -96,7 +112,29 @@ class Service:
 
     @staticmethod
     async def check_ton_deposit() -> None:
-        pass
+        if not (
+            transfers := await Service.get_ton_transfer(
+                destination=config.WALLET_ADDRESS
+            )
+        ):
+            return
+
+        for msg in transfers:
+            if not msg.comment:
+                continue
+
+            if len(msg.comment) != 8:
+                continue
+
+            if not (user := await UserService.get_user_by_memo(memo=msg.comment)):
+                continue
+
+            await Service.add_ton_deposit(
+                user_id=user.id,
+                new_balance=user.balance + int(msg.value),
+                msg_hash=msg.hash,
+                amount=int(msg.value),
+            )
 
     @staticmethod
     async def check_nft_deposit() -> None:

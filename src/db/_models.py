@@ -82,12 +82,13 @@ class UserGift(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'))
     gift_id: Mapped[int] = mapped_column(ForeignKey('gifts.id', ondelete='CASCADE'))
+    message_id: Mapped[int]
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), server_default=func.now()
     )
 
     user: Mapped['User'] = relationship(back_populates='user_gifts')
-    gift: Mapped['Gift'] = relationship(back_populates='user_gift')
+    gift: Mapped['Gift'] = relationship(back_populates='user_gift', lazy='joined')
 
 
 class TonDeposit(Base):
@@ -97,7 +98,7 @@ class TonDeposit(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'))
     msg_hash: Mapped[str]
-    amount: Mapped[int]
+    amount: Mapped[int] = mapped_column(BIGINT)
     payload: Mapped[str | None]
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), server_default=func.now()

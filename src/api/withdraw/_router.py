@@ -5,6 +5,7 @@ from ._schemas import (
     AddNftWithdrawRequest,
     AddGiftWithdrawRequest,
 )
+from ._utils import TON_WITHDRAW_FEE, NFT_WITHDRAW_FEE, GIFT_WITHDRAW_FEE
 from src.service.withdraw import WithdrawService
 from src.service.user import UserService
 from src.service.nft import NftService
@@ -42,13 +43,17 @@ async def add_ton_withdraw(
             detail=f'User {data.user_id} not found',
         )
 
-    if user.balance < data.amount:
+    if user.balance < data.amount + TON_WITHDRAW_FEE:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f'User {data.user_id} has not enough funds',
         )
 
     await WithdrawService.add_ton_withdraw(data.user_id, data.destination, data.amount)
+
+    await UserService.update_user_balance(
+        user_id=data.user_id, new_balance=user.balance - data.amount - TON_WITHDRAW_FEE
+    )
 
 
 @router.post(
@@ -84,8 +89,24 @@ async def add_nft_withdraw(
             status_code=status.HTTP_403_FORBIDDEN, detail='Invalid init data'
         )
 
+    if not (user := await UserService.get_user(user_nft.user_id)):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f'User {user_nft.user_id} not found',
+        )
+
+    if user.balance < NFT_WITHDRAW_FEE:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f'User {user_nft.user_id} has not enough funds',
+        )
+
     await WithdrawService.add_nft_withdraw(
-        user_nft.user_id, data.destination, user_nft.address
+        user_nft.user_id, user_nft.nft_id, data.destination, user_nft.address
+    )
+
+    await UserService.update_user_balance(
+        user_id=user_nft.user_id, new_balance=user.balance - TON_WITHDRAW_FEE
     )
 
 
@@ -116,4 +137,22 @@ async def add_gift_withdraw(
             status_code=status.HTTP_403_FORBIDDEN, detail='Invalid init data'
         )
 
-    await WithdrawService.add_gift_withdraw(user_gift.user_id, user_gift.gift_id)
+    if not (user := await UserService.get_user(user_gift.user_id)):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f'User {user_gift.user_id} not found',
+        )
+
+    # if user.balance < GIFT_WITHDRAW_FEE:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_400_BAD_REQUEST,
+    #         detail=f'User {user_gift.user_id} has not enough funds',
+    #     )
+
+    await WithdrawService.add_gift_withdraw(
+        user_gift.user_id, user_gift.gift_id, user_gift.message_id
+    )
+
+    await UserService.update_user_balance(
+        user_id=user_gift.user_id, new_balance=user.balance - GIFT_WITHDRAW_FEE
+    )
